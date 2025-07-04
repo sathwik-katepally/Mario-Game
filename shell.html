@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Game</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍄</text></svg>">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 1040px;
+            width: 95%;
+        }
+        
+        h1 {
+            color: #FF6B6B;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #canvas {
+            border: 3px solid #FF6B6B;
+            border-radius: 10px;
+            background: #87CEEB;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        #progress {
+            margin: 10px 0;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fullscreen-btn {
+            margin: 10px;
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .fullscreen-btn:hover {
+            background: #45a049;
+        }
+        
+        .fullscreen-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🍄 Mario Game</h1>
+        
+        <div id="progress">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <div id="status">Loading...</div>
+        
+        <canvas id="canvas" width="1000" height="700"></canvas>
+        
+        <button id="fullscreen-btn" class="fullscreen-btn" onclick="requestFullscreen()">
+            Fullscreen
+        </button>
+        
+        <div class="controls">
+            <strong>Controls:</strong>
+            <div class="controls-grid">
+                <div>• A/← D/→ : Move left/right</div>
+                <div>• Space/W/↑ : Jump</div>
+                <div>• ESC : Pause/Resume</div>
+                <div>• R : Restart level</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var statusElement = document.getElementById('status');
+        var progressElement = document.getElementById('progress-bar');
+        var canvas = document.getElementById('canvas');
+        var fullscreenBtn = document.getElementById('fullscreen-btn');
+        
+        // Module configuration
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.log(text);
+            },
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            canvas: canvas,
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                statusElement.innerHTML = text;
+                
+                if (m) {
+                    var progress = parseInt(m[2]) / parseInt(m[4]) * 100;
+                    progressElement.style.width = progress + '%';
+                } else if (text === '') {
+                    progressElement.style.width = '100%';
+                    statusElement.innerHTML = 'Ready to play!';
+                    setTimeout(() => {
+                        document.getElementById('progress').classList.add('hidden');
+                        statusElement.classList.add('hidden');
+                    }, 1000);
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+        
+        Module.setStatus('Downloading...');
+        
+        // Fullscreen functionality
+        function requestFullscreen() {
+            if (canvas.requestFullscreen) {
+                canvas.requestFullscreen();
+            } else if (canvas.webkitRequestFullscreen) {
+                canvas.webkitRequestFullscreen();
+            } else if (canvas.mozRequestFullScreen) {
+                canvas.mozRequestFullScreen();
+            } else if (canvas.msRequestFullscreen) {
+                canvas.msRequestFullscreen();
+            } else {
+                alert('Fullscreen is not supported in this browser.');
+                return;
+            }
+        }
+        
+        // Handle fullscreen changes
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                fullscreenBtn.textContent = 'Exit Fullscreen';
+            } else {
+                fullscreenBtn.textContent = 'Fullscreen';
+            }
+        });
+        
+        // Handle errors
+        window.onerror = function(msg, file, line, col, error) {
+            console.error('Error: ' + msg + ' at ' + file + ':' + line + ':' + col);
+            Module.setStatus('Error: ' + msg);
+        };
+        
+        // Focus canvas for keyboard input
+        canvas.addEventListener('click', function() {
+            canvas.focus();
+        });
+        
+        // Make canvas focusable
+        canvas.setAttribute('tabindex', '0');
+        canvas.focus();
+    </script>
+    
+    {{{ SCRIPT }}}
+</body>
+</html> 

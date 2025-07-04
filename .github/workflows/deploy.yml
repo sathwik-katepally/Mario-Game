@@ -59,6 +59,7 @@ jobs:
           cd emsdk
           source ./emsdk_env.sh
           cd ..
+          make clean-wasm
           make wasm
           
       - name: Setup Pages
