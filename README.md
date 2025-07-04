@@ -20,6 +20,3 @@ A classic Mario-style platformer game built with HTML5 Canvas and JavaScript.
 
 ## Development
 This game is currently under development. More features will be added soon!
-
-## License
-MIT License - feel free to use this code for your own projects!
