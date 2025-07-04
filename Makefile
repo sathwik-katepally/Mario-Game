@@ -1,36 +1,46 @@
+# Compiler settings
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O2
-LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf
-TARGET = mario_game
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -I/opt/homebrew/include -I/usr/local/include
+
+# Emscripten settings for WASM
+EMCXX = emcc
+EMCXXFLAGS = -std=c++17 -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s ALLOW_MEMORY_GROWTH=1 -s ASYNCIFY=1 -s SINGLE_FILE=1
+
+# Libraries
+LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf -L/opt/homebrew/lib -L/usr/local/lib
+
+# Source files
 SRCDIR = src
 SOURCES = $(wildcard $(SRCDIR)/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 
-# Detect OS for different SDL2 paths
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-    # macOS
-    CXXFLAGS += -I/opt/homebrew/include -I/usr/local/include
-    LIBS += -L/opt/homebrew/lib -L/usr/local/lib
-endif
+# Target executable
+TARGET = mario_game
+WASM_TARGET = mario_game.html
 
+# Default target
+all: $(TARGET)
+
+# Build native version
 $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $(TARGET) $(LIBS)
 
+# Build WASM version
+wasm: $(WASM_TARGET)
+
+$(WASM_TARGET): $(SOURCES)
+	$(EMCXX) $(EMCXXFLAGS) $(SOURCES) -o $(WASM_TARGET)
+
+# Compile source files to object files
 $(SRCDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Clean build files
 clean:
-	rm -f $(SRCDIR)/*.o $(TARGET)
+	rm -f $(SRCDIR)/*.o $(TARGET) mario_game.html mario_game.js mario_game.wasm mario_game.data
 
-install-deps:
-	@echo "Installing SDL2 dependencies..."
-	@if command -v brew >/dev/null 2>&1; then \
-		brew install sdl2 sdl2_image sdl2_ttf; \
-	elif command -v apt-get >/dev/null 2>&1; then \
-		sudo apt-get update && sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev; \
-	else \
-		echo "Please install SDL2, SDL2_image, and SDL2_ttf manually"; \
-	fi
+# Clean WASM files specifically
+clean-wasm:
+	rm -f mario_game.html mario_game.js mario_game.wasm mario_game.data
 
-.PHONY: clean install-deps 
+.PHONY: all wasm clean clean-wasm 

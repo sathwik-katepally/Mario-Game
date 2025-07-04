@@ -3,16 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mario Game</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Mario Game - WebAssembly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #FF6B6B;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #FF6B6B;
+        }
+
+        .controls h3 {
+            margin-top: 0;
+            color: #FF6B6B;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .control-group {
+            text-align: left;
+        }
+
+        .control-group strong {
+            color: #333;
+        }
+
+        .game-frame {
+            border: 3px solid #FF6B6B;
+            border-radius: 10px;
+            overflow: hidden;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tech-info {
+            background: #e8f4f8;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
+        <h1>🍄 Super Mario Game 🍄</h1>
+        <p class="subtitle">Built with C++ and compiled to WebAssembly</p>
+        
+        <div class="controls">
+            <h3>🎮 Game Controls</h3>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <strong>Movement:</strong><br>
+                    • A or ← : Move left<br>
+                    • D or → : Move right<br>
+                    • Space/W/↑ : Jump
+                </div>
+                <div class="control-group">
+                    <strong>Game:</strong><br>
+                    • ESC : Pause/Resume<br>
+                    • R : Restart level<br>
+                    • Navigate menus with arrow keys
+                </div>
+                <div class="control-group">
+                    <strong>Objective:</strong><br>
+                    • Collect all coins<br>
+                    • Avoid or stomp enemies<br>
+                    • Reach the goal flag
+                </div>
+            </div>
+        </div>
+
+        <div class="game-frame">
+            <div class="loading">Loading game... Please wait</div>
+            <iframe src="mario_game.html" 
+                    width="1000" 
+                    height="700" 
+                    frameborder="0"
+                    onload="document.querySelector('.loading').style.display='none'">
+                <p>Your browser does not support iframes. Please <a href="mario_game.html">click here</a> to play the game directly.</p>
+            </iframe>
+        </div>
+
+        <div class="tech-info">
+            <strong>🔧 Technical Details:</strong><br>
+            This game is written in C++ using SDL2 and compiled to WebAssembly using Emscripten. 
+            It runs entirely in your browser without any plugins!
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ using C++, SDL2, and WebAssembly</p>
+        </div>
     </div>
-    <div class="controls">
-        <p>Use arrow keys to move and space/up to jump</p>
-    </div>
-    <script src="script.js"></script>
 </body>
 </html>
