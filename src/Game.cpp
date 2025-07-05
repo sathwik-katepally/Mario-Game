@@ -63,20 +63,25 @@ bool Game::Initialize() {
     // Initialize particle system
     m_particleSystem = std::make_unique<ParticleSystem>();
     
-    // Load fonts - try common macOS system font paths
+    // Load fonts - try bundled font first, then system fonts as fallback
     const char* fontPaths[] = {
-        "/System/Library/Fonts/Helvetica.ttc",
-        "/System/Library/Fonts/Arial.ttf", 
-        "/Library/Fonts/Arial.ttf",
-        "/System/Library/Fonts/Times.ttc",
+        "assets/fonts/PressStart2P-Regular.ttf",           // Bundled retro font
+        "/System/Library/Fonts/Helvetica.ttc",            // macOS
+        "/System/Library/Fonts/Arial.ttf",                // macOS
+        "/Library/Fonts/Arial.ttf",                       // macOS
+        "/System/Library/Fonts/Times.ttc",                // macOS
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", // Linux fallback
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",            // Linux fallback
+        "C:/Windows/Fonts/arial.ttf",                     // Windows fallback
         nullptr
     };
     
     for (int i = 0; fontPaths[i] && !m_font; i++) {
-        m_font = TTF_OpenFont(fontPaths[i], 24);
+        // Use smaller size for pixel font, larger for system fonts
+        int fontSize = (i == 0) ? 16 : 24;
+        m_font = TTF_OpenFont(fontPaths[i], fontSize);
         if (m_font) {
-            std::cout << "Loaded font: " << fontPaths[i] << std::endl;
+            std::cout << "Loaded font: " << fontPaths[i] << " (size: " << fontSize << ")" << std::endl;
         }
     }
     
@@ -87,7 +92,9 @@ bool Game::Initialize() {
     
     // Try to load smaller font
     for (int i = 0; fontPaths[i] && !m_smallFont; i++) {
-        m_smallFont = TTF_OpenFont(fontPaths[i], 16);
+        // Use even smaller size for pixel font, normal small for system fonts
+        int smallFontSize = (i == 0) ? 12 : 16;
+        m_smallFont = TTF_OpenFont(fontPaths[i], smallFontSize);
     }
     
     // Start with menu
