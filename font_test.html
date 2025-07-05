@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Font Test</title>
+    <style>
+        @font-face {
+            font-family: 'PressStart2P';
+            src: url('assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-text {
+            font-family: 'PressStart2P', monospace;
+            font-size: 16px;
+            color: #333;
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border: 2px solid #ccc;
+        }
+        
+        .fallback-text {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #666;
+            margin: 20px 0;
+            padding: 10px;
+            background: #eee;
+            border: 2px solid #999;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Font Loading Test</h1>
+    
+    <div class="test-text">
+        Score: 1000 Level: 1 Lives: 3
+    </div>
+    
+    <div class="fallback-text">
+        Score: 1000 Level: 1 Lives: 3 (Arial fallback)
+    </div>
+    
+    <div id="status" class="status">
+        Testing font loading...
+    </div>
+    
+    <h2>Font File Test</h2>
+    <p>Trying to load: <a href="assets/fonts/PressStart2P-Regular.ttf">assets/fonts/PressStart2P-Regular.ttf</a></p>
+    
+    <script>
+        // Test if font loaded
+        document.fonts.ready.then(function() {
+            const testDiv = document.querySelector('.test-text');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Test with fallback font
+            ctx.font = '16px Arial';
+            const arialWidth = ctx.measureText('Score: 1000').width;
+            
+            // Test with custom font
+            ctx.font = '16px PressStart2P, monospace';
+            const customWidth = ctx.measureText('Score: 1000').width;
+            
+            const status = document.getElementById('status');
+            
+            if (Math.abs(customWidth - arialWidth) > 5) {
+                status.textContent = 'SUCCESS: Press Start 2P font loaded correctly!';
+                status.className = 'status success';
+            } else {
+                status.textContent = 'WARNING: Press Start 2P font may not have loaded (using fallback)';
+                status.className = 'status error';
+            }
+            
+            console.log('Arial width:', arialWidth);
+            console.log('Custom font width:', customWidth);
+        });
+        
+        // Test direct file access
+        fetch('assets/fonts/PressStart2P-Regular.ttf')
+            .then(response => {
+                if (response.ok) {
+                    console.log('Font file accessible via HTTP');
+                } else {
+                    console.error('Font file NOT accessible via HTTP:', response.status);
+                }
+            })
+            .catch(error => {
+                console.error('Font file fetch error:', error);
+            });
+    </script>
+</body>
+</html> 

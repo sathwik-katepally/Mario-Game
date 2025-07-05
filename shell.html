@@ -184,7 +184,7 @@
         
         Module.setStatus('Downloading...');
         
-        // Fullscreen functionality
+        // Fullscreen functionality with proper scaling
         function requestFullscreen() {
             if (canvas.requestFullscreen) {
                 canvas.requestFullscreen();
@@ -200,14 +200,46 @@
             }
         }
         
-        // Handle fullscreen changes
-        document.addEventListener('fullscreenchange', function() {
-            if (document.fullscreenElement) {
+        // Handle fullscreen changes with canvas scaling
+        function updateCanvasSize() {
+            if (document.fullscreenElement === canvas) {
+                // In fullscreen - scale canvas to fit screen while maintaining aspect ratio
+                const gameWidth = 1000;
+                const gameHeight = 700;
+                const aspectRatio = gameWidth / gameHeight;
+                
+                const screenWidth = window.screen.width;
+                const screenHeight = window.screen.height;
+                const screenAspectRatio = screenWidth / screenHeight;
+                
+                let newWidth, newHeight;
+                if (screenAspectRatio > aspectRatio) {
+                    // Screen is wider - fit to height
+                    newHeight = screenHeight;
+                    newWidth = screenHeight * aspectRatio;
+                } else {
+                    // Screen is taller - fit to width
+                    newWidth = screenWidth;
+                    newHeight = screenWidth / aspectRatio;
+                }
+                
+                canvas.style.width = newWidth + 'px';
+                canvas.style.height = newHeight + 'px';
+                canvas.style.imageRendering = 'pixelated'; // Crisp pixel scaling
                 fullscreenBtn.textContent = 'Exit Fullscreen';
             } else {
+                // Not in fullscreen - restore original size
+                canvas.style.width = '1000px';
+                canvas.style.height = '700px';
+                canvas.style.imageRendering = 'auto';
                 fullscreenBtn.textContent = 'Fullscreen';
             }
-        });
+        }
+        
+        document.addEventListener('fullscreenchange', updateCanvasSize);
+        document.addEventListener('webkitfullscreenchange', updateCanvasSize);
+        document.addEventListener('mozfullscreenchange', updateCanvasSize);
+        document.addEventListener('MSFullscreenChange', updateCanvasSize);
         
         // Handle errors
         window.onerror = function(msg, file, line, col, error) {

@@ -65,7 +65,10 @@ bool Game::Initialize() {
     
     // Load fonts - try bundled font first, then system fonts as fallback
     const char* fontPaths[] = {
-        "assets/fonts/PressStart2P-Regular.ttf",           // Bundled retro font
+        "assets/fonts/PressStart2P-Regular.ttf",           // Bundled retro font (web)
+        "./assets/fonts/PressStart2P-Regular.ttf",         // Alternative path (web)
+        "/assets/fonts/PressStart2P-Regular.ttf",          // Alternative path (web)
+        "PressStart2P-Regular.ttf",                        // Direct file (web)
         "/System/Library/Fonts/Helvetica.ttc",            // macOS
         "/System/Library/Fonts/Arial.ttf",                // macOS
         "/Library/Fonts/Arial.ttf",                       // macOS
@@ -78,10 +81,14 @@ bool Game::Initialize() {
     
     for (int i = 0; fontPaths[i] && !m_font; i++) {
         // Use smaller size for pixel font, larger for system fonts
-        int fontSize = (i == 0) ? 16 : 24;
+        int fontSize = (i < 4) ? 16 : 24;  // First 4 paths are web font attempts
+        std::cout << "Trying to load font: " << fontPaths[i] << " (size: " << fontSize << ")" << std::endl;
         m_font = TTF_OpenFont(fontPaths[i], fontSize);
         if (m_font) {
-            std::cout << "Loaded font: " << fontPaths[i] << " (size: " << fontSize << ")" << std::endl;
+            std::cout << "SUCCESS: Loaded font: " << fontPaths[i] << " (size: " << fontSize << ")" << std::endl;
+            break;
+        } else {
+            std::cout << "FAILED: " << fontPaths[i] << " - Error: " << TTF_GetError() << std::endl;
         }
     }
     
